@@ -1,4 +1,4 @@
-# RISC-V Based SoC for Hardware Performance Monitoring and Event Analysis
+# RISC-V SoC for Hardware Performance Monitoring and Event Analysis
 
 [![Project](https://img.shields.io/badge/Project-RISC--V%20HPM%20SoC-blue)](https://github.com/Shivanand2006/RISC-V-Based-SoC-for-Hardware-Performance-Monitoring-and-Event-Analysis)
 [![RTL](https://img.shields.io/badge/RTL-Verilog%202001%2FSystemVerilog-green)](https://github.com/Shivanand2006/RISC-V-Based-SoC-for-Hardware-Performance-Monitoring-and-Event-Analysis/tree/main/rtl)
@@ -6,38 +6,26 @@
 [![Sim](https://img.shields.io/badge/Simulation-VCS%20%7C%20Verdi%20FSDB-lightgrey)](https://github.com/Shivanand2006/RISC-V-Based-SoC-for-Hardware-Performance-Monitoring-and-Event-Analysis/tree/main/run)
 [![Status](https://img.shields.io/badge/Status-PASS-brightgreen)](https://github.com/Shivanand2006/RISC-V-Based-SoC-for-Hardware-Performance-Monitoring-and-Event-Analysis)
 
-**A complete synthesizable Verilog-2001 System-on-Chip integrating the CHIPS Alliance VeeR EL2 RISC-V core with three dedicated memory-mapped Hardware Performance Monitoring (HPM) IPs, peripherals, and comprehensive UVM verification.**
+A complete, synthesizable Verilog-2001 RISC-V system-on-chip integrating the CHIPS Alliance VeeR EL2 RISC-V core with three dedicated memory-mapped Hardware Performance Monitoring (HPM) IPs, peripherals, and comprehensive verification:
 
-**Repository:** [github.com/Shivanand2006/RISC-V-Based-SoC-for-Hardware-Performance-Monitoring-and-Event-Analysis](https://github.com/Shivanand2006/RISC-V-Based-SoC-for-Hardware-Performance-Monitoring-and-Event-Analysis)  
-**Reference Design:** [github.com/vivek08248/Aegis-V-SoC](https://github.com/vivek08248/Aegis-V-SoC)  
+1. **Cycle Counter**: 64-bit counter tracking enabled processor clock cycles with coherent shadow reads.
+2. **Instruction Counter**: 64-bit counter tracking retired instructions from commit stage.
+3. **Performance Event Counter**: 32-bit counter monitoring any of 8 selectable hardware events with sticky overflow, threshold compare, and interrupt generation.
 
 ---
 
 ## Table of Contents
-- [Project & Author](#project--author)
 - [Highlights](#highlights)
-- [SoC Architecture](#soc-architecture)
-- [Block Diagram](#block-diagram)
+- [Repository Structure](#repository-structure)
+- [SoC Architecture & Block Diagram](#soc-architecture--block-diagram)
 - [System Memory Map](#system-memory-map)
 - [Hardware Performance Monitor (HPM) IPs](#hardware-performance-monitor-hpm-ips)
-- [Performance Event Select Encoding](#performance-event-select-encoding)
-- [Repository Layout](#repository-layout)
+- [Performance Event Select Table](#performance-event-select-table)
 - [Module Responsibility Table](#module-responsibility-table)
-- [Simulation Results & Verification](#simulation-results--verification)
+- [Running Verification](#running-verification)
+- [Simulation Results & Telemetry](#simulation-results--telemetry)
 - [Synopsys VCS & Verdi Waveform Debug](#synopsys-vcs--verdi-waveform-debug)
 - [Documents & Reports Index](#documents--reports-index)
-
----
-
-## Project & Author
-
-| Field | Information |
-|---|---|
-| **Project Title** | Design and Verification of a RISC-V Based SoC for Hardware Performance Monitoring and Event Analysis |
-| **Student ID** | `1602-23-735-108` |
-| **Department** | Electronics & Communication Engineering |
-| **Course** | VLSI Design / SoC Design (Final Year Project) |
-| **Academic Year** | 2025–2026 |
 
 ---
 
@@ -51,11 +39,138 @@
 - **Peripherals**: 16550-compatible UART (115200 baud), 32-bit down-counter Timer with periodic interrupt tick, and 8-bit GPIO controller.
 - **Zero Measurement Overhead**: Hardware counters operate autonomously without software cycle stealing or instruction cache pollution.
 - **Verified with Synopsys VCS & Verdi**: 96 unit test checks + full SoC regression passing with zero errors and Verdi FSDB waveform dump.
-- **Modular UVM Verification Platform**: 4 complete UVM Verification Intellectual Properties (VIPs) with Agents, Drivers, Monitors, Scoreboards, and functional coverage.
+- **Modular UVM Verification Platform**: Complete UVM Verification Intellectual Properties (VIPs) with Agents, Drivers, Monitors, Scoreboards, and functional coverage.
 
 ---
 
-## SoC Architecture
+## Repository Structure
+
+```
+.
+├── .gitignore                       # EDA, VCS, and waveform ignore configuration
+├── README.md                        # Master repository documentation (this file)
+├── README_SUMMARY.md                # Quick-reference executive summary
+├── COMPILATION_STATUS.md            # Compilation status and executable proof
+├── COMPILATION_RESOLVED.md          # Technical resolution of bus & shadow races
+├── INTEGRATION_VERIFICATION_STATUS.md # SoC integration and regression metrics
+├── PROJECT_PROPOSAL.md              # Project proposal and milestone roadmap
+├── ARCHITECTURE_SPECIFICATION.md    # SoC architecture and IP block specifications
+├── ADDRESS_MAP.md                   # Complete system memory & register bitfield map
+├── UVM_TESTPLAN.md                  # Verification test plan (41 test cases)
+├── RISCV_TOOLCHAIN_SETUP.md         # Bare-metal GNU toolchain & linker setup guide
+├── TEST_EXECUTION_GUIDE.md          # Step-by-step test execution guide
+├── SIMULATION_TIMEOUT_FIX.md        # Timeout mitigation & simulation speedup analysis
+├── ctests/                          # Bare-metal C testbench and compiled simulation
+│   ├── soc_c_test.c                 # Multi-peripheral C test firmware
+│   ├── soc_c_start.S                # Bootloader startup assembly
+│   ├── soc_c_test.ld                # Target linker script
+│   ├── build_soc_c_test.sh          # Build & compile automation script
+│   ├── compile_ctest.sh             # VCS compile script for C-testbench
+│   ├── run_ctest.f                  # VCS simulation argument file
+│   ├── tb_soc_ctest.sv              # C-test simulation harness with memory backdoor
+│   ├── simv_soc_ctest               # Pre-compiled VCS 64-bit simulation binary
+│   ├── soc_c_test.fsdb              # Verdi FSDB waveform database (3.2 MB)
+│   ├── outputs/                     # Simulation terminal execution logs & proof
+│   └── waveforms/                   # Verdi nWave waveform screenshots
+├── doc/                             # Course documentation, reports, and specifications
+│   ├── 01_project_proposal.md       # Project proposal document
+│   ├── 02_architecture_spec.md      # Full architecture specification document
+│   ├── 03_github_steps.md           # Git repository setup and workflow guide
+│   ├── 04_riscv_toolchain_setup.md  # Toolchain and startup code guide
+│   ├── 05_address_map.md            # Address map and register definitions
+│   ├── 06_testplan.md               # Master verification test plan
+│   ├── testplan_soc_hpm.xlsx        # Master Excel test plan spreadsheet
+│   ├── core_interface.md            # RISC-V core interfaces, bus protocols, and events
+│   ├── memory_map.md                # System memory map and decoding rules
+│   ├── register_map.md              # Register definitions for all IPs and peripherals
+│   ├── testplan_soc_hpm.md          # Complete HPM SoC master test plan specification
+│   └── verification_plan.md         # Test plan and verification coverage matrix
+├── rtl/                             # Synthesizable RTL source files
+│   ├── common/
+│   │   └── reg_slave_if.v           # Bus-to-register adapter interface
+│   ├── core/
+│   │   ├── ahb_imem_adapter.v       # VeeR IFU AHB-Lite to IMEM adapter
+│   │   ├── ahb_to_bus_adapter.v     # VeeR LSU AHB-Lite to System Bus adapter
+│   │   └── veer_core_adapter.sv     # Top wrapper for CHIPS Alliance VeeR EL2 core
+│   ├── cycle_counter/
+│   │   ├── cycle_cnt_defines.vh     # Cycle counter register defines
+│   │   └── cycle_cnt_top.v          # 64-bit Cycle Counter IP
+│   ├── event_counter/
+│   │   ├── event_cnt_defines.vh     # Event counter register defines
+│   │   └── event_cnt_top.v          # 32-bit Performance Event Counter IP
+│   ├── instr_counter/
+│   │   ├── instr_cnt_defines.vh     # Instruction counter register defines
+│   │   └── instr_cnt_top.v          # 64-bit Instruction Counter IP
+│   ├── interconnect/
+│   │   ├── bus_decoder.v            # Central address decoder and bus interconnect
+│   │   └── interconnect_defines.vh  # Base addresses and mask definitions
+│   ├── mem/
+│   │   ├── dmem.v                   # 4KB Data RAM model (byte-writable)
+│   │   └── imem.v                   # 4KB Instruction RAM model
+│   ├── peripherals/
+│   │   ├── gpio_defines.vh          # GPIO register defines
+│   │   ├── gpio_top.v               # 8-bit GPIO peripheral
+│   │   ├── timer_defines.vh         # Timer register defines
+│   │   ├── timer_top.v              # 32-bit Timer peripheral
+│   │   ├── uart_defines.vh          # UART register defines
+│   │   └── uart_top.v               # 16550-compatible 8N1 UART
+│   ├── top/
+│   │   └── soc_top.v                # Top-level SoC integration
+│   └── Cores-VeeR-EL2/              # CHIPS Alliance VeeR EL2 RISC-V Core
+├── run/                             # VCS and Verdi simulation scripts
+│   ├── cycle_cnt.f                  # File list for Cycle Counter unit test
+│   ├── decoder.f                    # File list for Bus Decoder unit test
+│   ├── event_cnt.f                  # File list for Event Counter unit test
+│   ├── instr_cnt.f                  # File list for Instruction Counter unit test
+│   ├── run_ip.sh                    # Automated regression runner script
+│   ├── run_verdi.sh                 # Synopsys Verdi waveform launch script
+│   ├── soc.f                        # File list for SoC top-level simulation (VeeR EL2 Core)
+│   ├── soc_signals.rc               # Verdi signal trace configuration
+│   └── soc_veer.f                   # File list for SoC top-level simulation (VeeR EL2 Core)
+├── scripts/                         # UVM testbench generators and VIP packages
+│   ├── bus_decoder_if.csv           # Bus decoder interface specification
+│   ├── cycle_cnt_if.csv             # Cycle counter interface specification
+│   ├── event_cnt_if.csv             # Event counter interface specification
+│   ├── instr_cnt_if.csv             # Instruction counter interface specification
+│   ├── gpio_if.csv                  # GPIO interface specification
+│   ├── timer_if.csv                 # Timer interface specification
+│   ├── uart_if.csv                  # UART interface specification
+│   ├── uvm_full_tb_generator.py     # Python VIP generator
+│   ├── cycle_cnt_uvm_tb/            # Cycle counter UVM VIP package
+│   ├── instr_cnt_uvm_tb/            # Instruction counter UVM VIP package
+│   ├── event_cnt_uvm_tb/            # Event counter UVM VIP package
+│   └── bus_decoder_uvm_tb/          # Bus decoder UVM VIP package
+├── sw/                              # Bare-metal C workloads & linker scripts
+│   ├── Makefile                     # Firmware compilation makefile
+│   ├── crt0.S                       # C runtime startup code
+│   ├── link.ld                      # Memory placement linker script
+│   ├── bin2hex.py                   # Binary to Verilog hexadecimal converter
+│   ├── perf_regs.h                  # Memory-mapped peripheral register header
+│   ├── perf_app.c                   # Top-level bubble sort benchmark firmware
+│   ├── test_cycle.c                 # Standalone cycle counter test firmware
+│   ├── test_instr.c                 # Standalone instruction counter test firmware
+│   └── test_event.c                 # Standalone event counter test firmware
+└── tb/                              # Verification testbenches and simulation models
+    ├── common/
+    │   └── bus_bfm.v                # Reusable Bus BFM tasks and assertion helpers
+    ├── cycle_counter/
+    │   └── tb_cycle_cnt.v           # Self-checking Cycle Counter testbench
+    ├── event_counter/
+    │   └── tb_event_cnt.v           # Self-checking Event Counter testbench
+    ├── instr_counter/
+    │   └── tb_instr_cnt.v           # Self-checking Instruction Counter testbench
+    ├── interconnect/
+    │   └── tb_bus_decoder.v         # Self-checking Bus Decoder testbench
+    ├── soc_vips_env_pkg.sv          # UVM VIP top environment package
+    ├── tb_soc_uvm.sv                # Top-level UVM verification harness
+    └── top/
+        ├── tb_soc_top.v             # SoC top testbench with shadow cross-checks
+        └── uart_monitor.v           # Passive 8N1 UART decoder and token watcher
+```
+
+---
+
+## SoC Architecture & Block Diagram
 
 ```mermaid
 flowchart TD
@@ -86,197 +201,142 @@ flowchart TD
         EVT["32-bit Event Counter<br/>0x0000_2500"]
     end
 
-    CPU -->|AHB-Lite IFU| IFU_ADAPT
-    CPU -->|AHB-Lite LSU| LSU_ADAPT
+    CPU -->|AHB Instruction Bus| IFU_ADAPT
+    IFU_ADAPT -->|Dedicated Fetch| IMEM
 
-    IFU_ADAPT -->|Fetch Bus| IMEM
-    LSU_ADAPT -->|System Bus| DECODER
+    CPU -->|AHB Data Bus| LSU_ADAPT
+    LSU_ADAPT -->|Master Bus| DECODER
 
-    DECODER -->|0x0000_1xxx| DMEM
-    DECODER -->|0x0000_20xx| UART
-    DECODER -->|0x0000_21xx| TIMER
-    DECODER -->|0x0000_22xx| GPIO
-    DECODER -->|0x0000_23xx| CYC
-    DECODER -->|0x0000_24xx| INS
-    DECODER -->|0x0000_25xx| EVT
+    DECODER -->|Select 0| IMEM
+    DECODER -->|Select 1| DMEM
+    DECODER -->|Select 2| UART
+    DECODER -->|Select 3| TIMER
+    DECODER -->|Select 4| GPIO
+    DECODER -->|Select 5| CYC
+    DECODER -->|Select 6| INS
+    DECODER -->|Select 7| EVT
 
-    CPU -.->|instr_retire| INS
-    CPU -.->|Loads/Stores/Branches/Stalls/Traps| EVT
-    TIMER -.->|timer_tick| EVT
-    UART -.->|tx_done| EVT
+    CPU -.->|Commit Pulse| INS
+    CPU -.->|Hardware Events| EVT
 ```
-
----
-
-## Block Diagram
-
-The system interconnect and core wiring diagram:
-
-<p align="center">
-  <img src="doc/02_architecture_spec.md" alt="Architecture Block Diagram" width="700"/>
-</p>
 
 ---
 
 ## System Memory Map
 
-| Address Range | Size | Peripheral / Memory | Description | Base Address |
-|---|---|---|---|---|
-| `0x0000_0000 – 0x0000_0FFF` | 4 KB | **IMEM** | Instruction Memory (`imem.v`) | `0x0000_0000` |
-| `0x0000_1000 – 0x0000_1FFF` | 4 KB | **DMEM** | Data Memory (`dmem.v`) | `0x0000_1000` |
-| `0x0000_2000 – 0x0000_20FF` | 256 B | **UART** | 16550 Serial Controller (`uart_top.v`) | `0x0000_2000` |
-| `0x0000_2100 – 0x0000_21FF` | 256 B | **Timer** | 32-bit Reloadable Down-Counter (`timer_top.v`) | `0x0000_2100` |
-| `0x0000_2200 – 0x0000_22FF` | 256 B | **GPIO** | 8-bit General Purpose I/O (`gpio_top.v`) | `0x0000_2200` |
-| `0x0000_2300 – 0x0000_23FF` | 256 B | **Cycle Counter** | 64-bit Cycle Counter IP (`cycle_cnt_top.v`) | `0x0000_2300` |
-| `0x0000_2400 – 0x0000_24FF` | 256 B | **Instruction Counter** | 64-bit Instruction Counter IP (`instr_cnt_top.v`) | `0x0000_2400` |
-| `0x0000_2500 – 0x0000_25FF` | 256 B | **Event Counter** | 32-bit Performance Event Counter (`event_cnt_top.v`) | `0x0000_2500` |
-
-*Unmapped addresses (e.g. `0x0000_2600` through `0xFFFF_FFFF`) complete in 1 cycle with `ready=1`, `rdata=32'h0`, and `err=1` without bus lockup.*
+| Address Range | Size | Peripheral / Memory | Description |
+|---|---|---|---|
+| `0x0000_0000 – 0x0000_0FFF` | 4 KB | Instruction Memory (IMEM) | Dual-ported RAM; boot execution space |
+| `0x0000_1000 – 0x0000_1FFF` | 4 KB | Data Memory (DMEM) | Byte-writable scratchpad RAM (Stack & Data) |
+| `0x0000_2000 – 0x0000_20FF` | 256 B | UART (16550 subset) | Baud divisor, TX/RX data, Line Status |
+| `0x0000_2100 – 0x0000_21FF` | 256 B | 32-bit Timer | Down-counter with auto-reload and interrupt tick |
+| `0x0000_2200 – 0x0000_22FF` | 256 B | 8-bit GPIO | Bidirectional with DIR, DATA_OUT, DATA_IN |
+| `0x0000_2300 – 0x0000_23FF` | 256 B | 64-bit Cycle Counter | Coherent shadow reads, clear, control |
+| `0x0000_2400 – 0x0000_24FF` | 256 B | 64-bit Instruction Counter | Retired instruction counter with shadow reads |
+| `0x0000_2500 – 0x0000_25FF` | 256 B | 32-bit Event Counter | 8 selectable event sources, threshold, IRQ |
 
 ---
 
 ## Hardware Performance Monitor (HPM) IPs
 
-### 1. 64-Bit Cycle Counter (`0x0000_2300`)
-- **CTRL (`0x00`)**: Bit 0 = `EN` (enable), Bit 1 = `CLEAR` (synchronous reset to 0).
-- **STATUS (`0x04`)**: Bit 0 = `RUNNING` (mirrors `EN`).
-- **CNT_LO (`0x08`)**: Low 32 bits of count. **Side-effect**: reading `CNT_LO` captures `count[63:32]` into `shadow_hi` in the same clock cycle.
-- **CNT_HI (`0x0C`)**: High 32 bits from shadow register.
+### 1. Cycle Counter IP (`0x0000_2300`)
+- **64-bit counter** continuously monitoring active CPU execution clock cycles.
+- **Coherent Shadow Capture**: Reading `CYCLE_CNT_LOW` (`0x00`) automatically samples the upper 32 bits into `CYCLE_CNT_SHADOW` (`0x08`), ensuring an atomic 64-bit snapshot without software race conditions.
+- **Registers**:
+  - `0x00` - `CYCLE_CNT_LOW` (Bits 31:0, read initiates shadow latch)
+  - `0x04` - `CYCLE_CNT_HIGH` (Bits 63:32, live count)
+  - `0x08` - `CYCLE_CNT_SHADOW` (Bits 63:32, latched at time of low read)
+  - `0x0C` - `CYCLE_CNT_CTRL` (Bit 0: Enable, Bit 1: Clear)
 
-### 2. 64-Bit Instruction Counter (`0x0000_2400`)
-- Increments only when `EN=1` AND processor commits an instruction (`instr_retire_o = 1`).
-- Eliminates flushed pipeline bubbles, speculative mispredicted instructions, and stall cycles.
-- Implements atomic coherent 64-bit shadow read logic identical to the Cycle Counter.
+### 2. Instruction Counter IP (`0x0000_2400`)
+- **64-bit counter** incremented exclusively by the retired instruction signal (`instr_retire_o`) from the core commit stage.
+- Multicycle stalls, pipeline bubbles, and flushed branch instructions are automatically excluded from the count.
+- **Coherent Shadow Capture**: Atomic 64-bit read mechanism identical to the Cycle Counter.
+- **Registers**:
+  - `0x00` - `INSTR_CNT_LOW` (Bits 31:0, read initiates shadow latch)
+  - `0x04` - `INSTR_CNT_HIGH` (Bits 63:32, live count)
+  - `0x08` - `INSTR_CNT_SHADOW` (Bits 63:32, latched at time of low read)
+  - `0x0C` - `INSTR_CNT_CTRL` (Bit 0: Enable, Bit 1: Clear)
 
-### 3. 32-Bit Performance Event Counter (`0x0000_2500`)
-- **EVT_SEL (`0x04`)**: Selects one of 8 hardware micro-events.
-- **THRESH (`0x0C`)**: Programmable 32-bit threshold value.
-- **STATUS (`0x10`)**: Sticky `OVF` (bit 0), sticky `THRESH_HIT` (bit 1), `RUNNING` (bit 2). Bits 0 and 1 are Write-1-to-Clear (W1C).
-
----
-
-## Performance Event Select Encoding
-
-| `EVT_SEL` | Hardware Event Name | Source Signal / Logic | Firmware Verification Stimulus |
-|:---:|---|---|---|
-| `0` | **Data Load Accepted** | `lsu_htrans[1] & ~lsu_hwrite & lsu_hready` | 10+ consecutive memory loads from DMEM |
-| `1` | **Data Store Accepted** | `lsu_htrans[1] & lsu_hwrite & lsu_hready` | 10+ consecutive memory stores to DMEM |
-| `2` | **Instruction Fetch Accepted** | `ifu_htrans[1] & ifu_hready` | Straight-line assembly nop sequence |
-| `3` | **Branch / Jump Taken** | `exu_pmu_i0_br_ataken & tlu_i0_commit_cmt` | Conditional branch loop with deterministic taken branches |
-| `4` | **Pipeline Stall / Wait Cycle** | `(ifu_htrans[1] & ~ifu_hready) \| (lsu_htrans[1] & ~lsu_hready)` | Load-use interlock sequence |
-| `5` | **Exception / Trap Taken** | `trace_rv_i_exception_ip` | Software trap entry via `ecall` |
-| `6` | **Timer Interrupt Tick** | `timer_top.tick_o` | Timer peripheral down-counter rollover |
-| `7` | **UART Frame TX Done** | `uart_top.tx_done_o` | Serial transmission frame completion |
+### 3. Performance Event Counter IP (`0x0000_2500`)
+- **32-bit event counter** multiplexing 8 microarchitectural hardware events.
+- **Threshold Comparator**: Fires an interrupt flag when the counter reaches or exceeds `EVT_THRESHOLD`.
+- **Registers**:
+  - `0x00` - `EVT_CNT` (Bits 31:0, current event count)
+  - `0x04` - `EVT_CTRL` (Bit 0: Enable, Bit 1: Clear, Bits 4:2: Event Select `EVT_SEL`)
+  - `0x08` - `EVT_THRESHOLD` (Bits 31:0, threshold comparison value)
+  - `0x0C` - `EVT_STATUS` (Bit 0: Overflow sticky flag, Bit 1: Threshold reached flag; W1C)
 
 ---
 
-## Repository Layout
+## Performance Event Select Table
 
-Organized matching the reference standard (`Aegis-V-SoC`):
-
-```
-.
-├── README.md                                  # Master repository documentation (this file)
-├── README_SUMMARY.md                          # Quick-reference executive summary
-├── COMPILATION_STATUS.md                      # Compilation status and executable proof
-├── COMPILATION_RESOLVED.md                    # Technical log of resolved integration issues
-├── INTEGRATION_VERIFICATION_STATUS.md         # Final regression report and test matrix
-├── SIMULATION_TIMEOUT_FIX.md                  # Watchdog timer and UART speedup guide
-├── TEST_EXECUTION_GUIDE.md                    # Step-by-step test execution walkthrough
-├── PROJECT_PROPOSAL.md                        # Course project proposal document
-├── ARCHITECTURE_SPECIFICATION.md              # 20-page full SoC architectural specification
-├── ADDRESS_MAP.md                             # Complete memory and peripheral register maps
-├── GITHUB_SETUP_STEPS.md                      # Git workflow and repository setup guide
-├── RISCV_TOOLCHAIN_SETUP.md                   # Toolchain build and bare-metal compilation guide
-├── UVM_TESTPLAN.md                            # Comprehensive 41-case UVM verification plan
-│
-├── ctests/                                    # Bare-metal C testbench directory
-│   ├── soc_c_test.c                           # Top C test exercising all SoC IPs
-│   ├── soc_c_start.S                          # RISC-V boot and stack setup assembly
-│   ├── soc_c_test.ld                          # Linker script (IMEM @ 0x0, DMEM @ 0x1000)
-│   ├── compile_ctest.sh                       # Firmware compilation script (GCC -> HEX)
-│   ├── build_soc_c_test.sh                    # End-to-end compile and simulation script
-│   ├── run_ctest.f                            # VCS simulation filelist
-│   ├── tb_soc_ctest.sv                        # Top testbench wrapper
-│   ├── outputs/                               # Terminal simulation execution screenshots
-│   └── waveforms/                             # Verdi signal waveform screenshots
-│
-├── doc/                                       # Official project documentation
-│   ├── 01_project_proposal.md                 # Project Proposal
-│   ├── 02_architecture_spec.md                # Full Architecture Spec
-│   ├── 03_github_steps.md                     # GitHub Guide
-│   ├── 04_riscv_toolchain_setup.md            # Toolchain Setup
-│   ├── 05_address_map.md                      # Complete Register Map
-│   ├── 06_testplan.md                         # Verification Master Plan
-│   ├── testplan_soc_hpm.xlsx                  # Master verification Excel spreadsheet
-│   ├── core_interface.md                      # VeeR EL2 core interface specification
-│   ├── memory_map.md                          # Address decoding rules
-│   └── register_map.md                        # Register bitfield descriptions
-│
-├── rtl/                                       # Synthesizable RTL source code
-│   ├── common/reg_slave_if.v                  # Reusable bus-to-register adapter
-│   ├── cycle_counter/cycle_cnt_top.v          # 64-bit Cycle Counter IP
-│   ├── instr_counter/instr_cnt_top.v          # 64-bit Instruction Counter IP
-│   ├── event_counter/event_cnt_top.v          # 32-bit Event Counter IP
-│   ├── interconnect/bus_decoder.v             # Central bus decoder / crossbar
-│   ├── mem/imem.v, dmem.v                     # 4KB Instruction & Data RAM models
-│   ├── peripherals/uart_top.v, timer_top.v    # 16550 UART, Timer, GPIO
-│   ├── core/veer_core_adapter.sv              # VeeR EL2 core wrapper & adapters
-│   └── top/soc_top.v                          # Top-level SoC integration
-│
-├── scripts/                                   # VIP directories and interface CSVs
-│   ├── cycle_cnt_if.csv, cycle_cnt_uvm_tb/    # Cycle Counter VIP package and UVM tb
-│   ├── instr_cnt_if.csv, instr_cnt_uvm_tb/    # Instruction Counter VIP package and UVM tb
-│   ├── event_cnt_if.csv, event_cnt_uvm_tb/    # Event Counter VIP package and UVM tb
-│   ├── bus_decoder_if.csv, bus_decoder_uvm_tb/# Bus Decoder VIP package and UVM tb
-│   ├── gpio_if.csv, timer_if.csv, uart_if.csv # Peripheral interface CSVs
-│   └── uvm_full_tb_generator.py               # VIP testbench generator script
-│
-├── sw/                                        # Firmware software sources
-│   ├── crt0.S, link.ld, Makefile              # Bare-metal build collateral
-│   ├── perf_regs.h                            # Register definitions and UART macros
-│   ├── test_cycle.c, test_instr.c, test_event.c# Unit firmware tests
-│   └── perf_app.c                             # Main bubble sort demonstration program
-│
-├── tb/                                        # Simulation testbenches
-│   ├── common/bus_bfm.v                       # Bus Master BFM tasks
-│   ├── cycle_counter/tb_cycle_cnt.v           # Cycle Counter unit testbench
-│   ├── instr_counter/tb_instr_cnt.v           # Instruction Counter unit testbench
-│   ├── event_counter/tb_event_cnt.v           # Event Counter unit testbench
-│   ├── interconnect/tb_bus_decoder.v          # Bus Decoder unit testbench
-│   ├── top/tb_soc_top.v, uart_monitor.v       # SoC testbench with passive UART monitor
-│   ├── soc_vips_env_pkg.sv                    # Master SoC UVM environment package
-│   ├── tb_soc_uvm.sv                          # Top-level SoC UVM testbench
-│   ├── run.f                                  # VCS UVM filelist
-│   └── run.sh                                 # VCS UVM execution script
-│
-└── run/                                       # Regression runners
-    ├── run_ip.sh                              # Multi-target regression runner
-    ├── run_verdi.sh                           # VCS compile + Verdi waveform launcher
-    └── *.f                                    # Component filelists
-```
+| `EVT_SEL` | Hardware Event | Core Signal Source | Description |
+|---|---|---|---|
+| `0` | Data memory read accepted (Load) | `evt_load_o` | Successful memory read request |
+| `1` | Data memory write accepted (Store) | `evt_store_o` | Successful memory write request |
+| `2` | Instruction fetch request accepted | `evt_fetch_o` | Successful instruction cache fetch |
+| `3` | Branch or Jump taken | `evt_branch_jump_o` | Pipeline redirect on taken branch/jump |
+| `4` | Pipeline stall or memory wait cycle | `evt_stall_bubble_o` | Multi-cycle stall or wait state |
+| `5` | Exception or Trap taken | `evt_exception_o` | Illegal instruction, trap, or fault |
+| `6` | Timer interrupt tick event | `timer_tick` | Periodic timer expiration pulse |
+| `7` | UART frame transmit complete | `uart_tx_done` | Byte shifted out of TX buffer |
 
 ---
 
 ## Module Responsibility Table
 
-| Module Name | File Path | Responsibilities | Author / Source |
+| Module | Location | Primary Function | Source |
 |---|---|---|---|
-| `soc_top` | `rtl/top/soc_top.v` | Top-level SoC integration, clock/reset distribution, pin routing | Authored |
-| `bus_decoder` | `rtl/interconnect/bus_decoder.v` | Central address decoder, 1-cycle ready, error trap for unmapped | Authored |
-| `cycle_cnt_top` | `rtl/cycle_counter/cycle_cnt_top.v` | 64-bit cycle counting, coherent shadow register capture | Authored |
-| `instr_cnt_top` | `rtl/instr_counter/instr_cnt_top.v` | 64-bit retired instruction counting gated by core commit | Authored |
-| `event_cnt_top` | `rtl/event_counter/event_cnt_top.v` | 32-bit event tracking across 8 events, threshold comparison, W1C | Authored |
-| `reg_slave_if` | `rtl/common/reg_slave_if.v` | Bus-to-register adapter interface | Authored |
-| `uart_top` | `rtl/peripherals/uart_top.v` | 16550 UART with baud rate divisor, TX/RX buffers | Provided IP |
-| `timer_top` | `rtl/peripherals/timer_top.v` | 32-bit down-counter with auto-reload and tick generation | Provided IP |
-| `gpio_top` | `rtl/peripherals/gpio_top.v` | 8-bit bidirectional GPIO with DIR/OUT/IN registers | Provided IP |
-| `veer_core_adapter` | `rtl/core/veer_core_adapter.sv`| Core wrapper adapting AHB-Lite buses and tapping commit pulses | Authored |
-| `VeeR EL2 Core` | `rtl/Cores-VeeR-EL2/` | RV32IMC 4-stage pipelined superscalar RISC-V processor | CHIPS Alliance (Imported) |
+| `soc_top` | `rtl/top/soc_top.v` | Top-level SoC integration, clock/reset distribution, pin routing | Synthesizable RTL |
+| `bus_decoder` | `rtl/interconnect/bus_decoder.v` | Central address decoder, 1-cycle ready, error trap for unmapped | Synthesizable RTL |
+| `cycle_cnt_top` | `rtl/cycle_counter/cycle_cnt_top.v` | 64-bit cycle counting, coherent shadow register capture | Synthesizable RTL |
+| `instr_cnt_top` | `rtl/instr_counter/instr_cnt_top.v` | 64-bit retired instruction counting gated by core commit | Synthesizable RTL |
+| `event_cnt_top` | `rtl/event_counter/event_cnt_top.v` | 32-bit event tracking across 8 events, threshold comparison, W1C | Synthesizable RTL |
+| `reg_slave_if` | `rtl/common/reg_slave_if.v` | Bus-to-register adapter interface | Synthesizable RTL |
+| `uart_top` | `rtl/peripherals/uart_top.v` | 16550 UART with baud rate divisor, TX/RX buffers | Synthesizable RTL |
+| `timer_top` | `rtl/peripherals/timer_top.v` | 32-bit down-counter with auto-reload and tick generation | Synthesizable RTL |
+| `gpio_top` | `rtl/peripherals/gpio_top.v` | 8-bit bidirectional GPIO with DIR/OUT/IN registers | Synthesizable RTL |
+| `veer_core_adapter` | `rtl/core/veer_core_adapter.sv`| Core wrapper adapting AHB-Lite buses and tapping commit pulses | Synthesizable RTL |
+| `VeeR EL2 Core` | `rtl/Cores-VeeR-EL2/` | RV32IMC 4-stage pipelined superscalar RISC-V processor | CHIPS Alliance |
 
 ---
 
-## Simulation Results & Verification
+## Running Verification
+
+### 1. Automated Unit and Regression Suite
+Run unit tests and SoC simulation using the automated regression runner:
+
+```bash
+# Run all unit testbenches and regression
+./run/run_ip.sh all
+
+# Or run individual IP testbenches:
+./run/run_ip.sh cycle     # Cycle Counter unit test (16 checks)
+./run/run_ip.sh instr     # Instruction Counter unit test (16 checks)
+./run/run_ip.sh event     # Event Counter unit test (24 checks)
+./run/run_ip.sh decoder   # Address Decoder unit test (20 checks)
+./run/run_ip.sh soc       # SoC Top-level testbench (VeeR EL2 Core)
+./run/run_ip.sh soc_veer  # SoC Top-level testbench (VeeR EL2 Core alias)
+```
+
+The script supports `SIMULATOR=iverilog` (default), `SIMULATOR=vcs`, `SIMULATOR=vsim`, or `SIMULATOR=verilator`.
+
+### 2. Bare-Metal C Test Suite (`ctests/`)
+```bash
+cd ctests
+bash build_soc_c_test.sh
+```
+
+### 3. Top-Level UVM Verification
+```bash
+cd tb
+bash run.sh tb_soc_uvm soc_top_base_test
+```
+
+---
+
+## Simulation Results & Telemetry
 
 The SoC top-level was simulated executing a 16-element bubble sort application compiled directly from C (`sw/perf_app.c`):
 
@@ -319,19 +379,17 @@ $finish at simulation time           8138270000 ps
 
 ## Synopsys VCS & Verdi Waveform Debug
 
+To launch waveform debug in Synopsys Verdi:
+
 ```bash
-# 1. Run all unit and SoC testbenches:
-./run/run_ip.sh all
-
-# 2. Compile and launch Verdi GUI for SoC top-level:
+# Launch Verdi GUI with pre-loaded FSDB waveform and signal tree:
 ./run/run_verdi.sh soc
-
-# 3. Compile and simulate bare-metal C test:
-cd ctests && bash build_soc_c_test.sh
-
-# 4. Run UVM testsuite:
-cd tb && bash run.sh tb_soc_uvm soc_top_base_test
 ```
+
+Waveform artifacts and terminal logs are available in:
+- `ctests/soc_c_test.fsdb` (Verdi FSDB database)
+- `ctests/outputs/` (Terminal output logs and screenshots)
+- `ctests/waveforms/` (FSDB signal traces and timing diagrams)
 
 ---
 
