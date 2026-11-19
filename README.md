@@ -241,31 +241,32 @@ flowchart TD
 
 ### 1. Cycle Counter IP (`0x0000_2300`)
 - **64-bit counter** continuously monitoring active CPU execution clock cycles.
-- **Coherent Shadow Capture**: Reading `CYCLE_CNT_LOW` (`0x00`) automatically samples the upper 32 bits into `CYCLE_CNT_SHADOW` (`0x08`), ensuring an atomic 64-bit snapshot without software race conditions.
+- **Coherent Shadow Capture**: Reading `CNT_LO` (`0x08`) automatically captures `count[63:32]` into the internal `CNT_HI` shadow register (`0x0C`) in the same clock cycle, ensuring an atomic 64-bit snapshot without software race conditions.
 - **Registers**:
-  - `0x00` - `CYCLE_CNT_LOW` (Bits 31:0, read initiates shadow latch)
-  - `0x04` - `CYCLE_CNT_HIGH` (Bits 63:32, live count)
-  - `0x08` - `CYCLE_CNT_SHADOW` (Bits 63:32, latched at time of low read)
-  - `0x0C` - `CYCLE_CNT_CTRL` (Bit 0: Enable, Bit 1: Clear)
+  - `0x00` - `CTRL` (R/W: Bit 0 = `EN` enable counting, Bit 1 = `CLEAR` self-clearing counter reset)
+  - `0x04` - `STATUS` (RO: Bit 0 = `RUNNING` mirrors EN)
+  - `0x08` - `CNT_LO` (RO: Counter bits [31:0]; reading initiates `CNT_HI` shadow register capture)
+  - `0x0C` - `CNT_HI` (RO: Shadow register containing bits [63:32] captured during last `CNT_LO` read)
 
 ### 2. Instruction Counter IP (`0x0000_2400`)
 - **64-bit counter** incremented exclusively by the retired instruction signal (`instr_retire_o`) from the core commit stage.
 - Multicycle stalls, pipeline bubbles, and flushed branch instructions are automatically excluded from the count.
-- **Coherent Shadow Capture**: Atomic 64-bit read mechanism identical to the Cycle Counter.
+- **Coherent Shadow Capture**: Atomic 64-bit read mechanism identical to the Cycle Counter (reading `CNT_LO` captures `CNT_HI`).
 - **Registers**:
-  - `0x00` - `INSTR_CNT_LOW` (Bits 31:0, read initiates shadow latch)
-  - `0x04` - `INSTR_CNT_HIGH` (Bits 63:32, live count)
-  - `0x08` - `INSTR_CNT_SHADOW` (Bits 63:32, latched at time of low read)
-  - `0x0C` - `INSTR_CNT_CTRL` (Bit 0: Enable, Bit 1: Clear)
+  - `0x00` - `CTRL` (R/W: Bit 0 = `EN` enable counting, Bit 1 = `CLEAR` self-clearing counter reset)
+  - `0x04` - `STATUS` (RO: Bit 0 = `RUNNING` mirrors EN)
+  - `0x08` - `CNT_LO` (RO: Retired instruction count bits [31:0]; reading initiates shadow latch)
+  - `0x0C` - `CNT_HI` (RO: Shadow register containing retired instruction count bits [63:32])
 
 ### 3. Performance Event Counter IP (`0x0000_2500`)
-- **32-bit event counter** multiplexing 8 microarchitectural hardware events.
-- **Threshold Comparator**: Fires an interrupt flag when the counter reaches or exceeds `EVT_THRESHOLD`.
+- **32-bit event counter** multiplexing 8 microarchitectural hardware events with configurable threshold detection and interrupt generation.
+- **Threshold Comparator**: Triggers `THRESH_HIT` and asserts interrupt output `irq_o` when `COUNT >= THRESH` (if `IRQ_EN` is enabled).
 - **Registers**:
-  - `0x00` - `EVT_CNT` (Bits 31:0, current event count)
-  - `0x04` - `EVT_CTRL` (Bit 0: Enable, Bit 1: Clear, Bits 4:2: Event Select `EVT_SEL`)
-  - `0x08` - `EVT_THRESHOLD` (Bits 31:0, threshold comparison value)
-  - `0x0C` - `EVT_STATUS` (Bit 0: Overflow sticky flag, Bit 1: Threshold reached flag; W1C)
+  - `0x00` - `CTRL` (R/W: Bit 0 = `EN`, Bit 1 = `CLEAR`, Bit 2 = `IRQ_EN`)
+  - `0x04` - `EVT_SEL` (R/W: Bits [2:0] select hardware event 0–7)
+  - `0x08` - `COUNT` (RO: 32-bit accumulated event count)
+  - `0x0C` - `THRESH` (R/W: 32-bit threshold comparison value)
+  - `0x10` - `STATUS` (R/W1C: Bit 0 = `OVF` sticky overflow, Bit 1 = `THRESH_HIT` sticky threshold hit, Bit 2 = `RUNNING` mirrors EN)
 
 ---
 
