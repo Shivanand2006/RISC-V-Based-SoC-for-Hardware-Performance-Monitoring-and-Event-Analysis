@@ -61,3 +61,6 @@ __pycache__/
 
 build/
 
+
+push_to_github.bat
+
