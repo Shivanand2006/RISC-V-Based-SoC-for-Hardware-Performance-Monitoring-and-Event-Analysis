@@ -1,0 +1,63 @@
+# ============================================================
+# RISC-V HPM SoC — .gitignore
+# Verified against the live repo tree.
+# Tuned for: Synopsys VCS/Verdi, Questa/Xcelium,
+# Python tooling, and general editor/OS noise.
+# ============================================================
+
+# ---------- Synopsys VCS Build Artifacts ----------
+simv
+simv.daidir/
+simv.vdb/
+csrc/
+csrc_soc/
+ucli.key
+vc_hdrs.h
+AN.DB/
+DVEfiles/
+*.vpd
+*.log
+sim.out
+sim.out.daidir/
+*.daidir/
+build/sim_*
+build/*.log
+build/csrc*
+
+# ---------- Synopsys Verdi / nWave Waveforms & Logs ----------
+*.fsdb
+verdiLog/
+VerdiLog/
+fsdbreportLog/
+nWaveLog/
+novas_autosave.rc
+novas.rc
+novas.conf
+novas_dump.log
+.nWave*
+
+# ---------- Cadence Tools ----------
+xcelium.d/
+INCA_libs/
+
+# ---------- ModelSim / Questa ----------
+work/
+transcript
+vsim.wlf
+
+# ---------- Temporary Files & Lock Files ----------
+*~
+*.swp
+*.bak
+.~lock.*
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+
+# Keep compiled C-test collateral in ctests/
+!ctests/simv_soc_ctest
+!ctests/soc_c_test.fsdb
+
+build/
+

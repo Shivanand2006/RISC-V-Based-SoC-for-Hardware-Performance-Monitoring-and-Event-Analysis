@@ -1,0 +1,9 @@
+VIP_Name,Component,Class_Name,File_Name,Description,Key_Methods,Signals_Used
+GPIO_VIP,Sequence_Item,gpio_seq_item,gpio_item.sv,Encapsulates GPIO bus transactions and pin drives,convert2string;do_copy;do_compare,"addr,data,we,gpio_in,gpio_out"
+GPIO_VIP,Driver,gpio_driver,gpio_driver.sv,Drives bus reads/writes and controls simulated external GPIO pins,drive_tx;run_phase,"clk,rst_n,bus_req,bus_we,gpio_in"
+GPIO_VIP,Monitor,gpio_monitor,gpio_monitor.sv,Monitors bus transactions and observes GPIO pin state transitions,sample_tx;run_phase,"clk,gpio_out,gpio_in,bus_ready"
+GPIO_VIP,Agent,gpio_agent,gpio_agent.sv,Encapsulates sequencer driver and monitor for GPIO VIP,build_phase;connect_phase,N/A
+GPIO_VIP,Scoreboard,gpio_scoreboard,gpio_scoreboard.sv,Validates DIR OUT and IN register operations,write;check_phase,"gpio_out,gpio_in"
+GPIO_VIP,Interface,gpio_if,gpio_if.sv,SystemVerilog interface connecting GPIO DUT to VIP,clocking_cb,"clk,rst_n,gpio_in[7:0],gpio_out[7:0]"
+GPIO_VIP,Sequence,gpio_dir_out_seq,gpio_seq.sv,Configures direction to output and tests pin drive,body,DIR;OUT
+GPIO_VIP,Sequence,gpio_input_read_seq,gpio_seq.sv,Simulates external input stimulus and verifies IN register,body,IN;gpio_in

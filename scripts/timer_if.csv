@@ -1,0 +1,8 @@
+VIP_Name,Component,Class_Name,File_Name,Description,Key_Methods,Signals_Used
+TIMER_VIP,Sequence_Item,timer_seq_item,timer_item.sv,Encapsulates Timer reload values control and tick pulses,convert2string;do_copy;do_compare,"addr,data,we,tick_seen"
+TIMER_VIP,Driver,timer_driver,timer_driver.sv,Programs RELOAD register and EN control bit,drive_tx;run_phase,"clk,rst_n,bus_req,bus_we"
+TIMER_VIP,Monitor,timer_monitor,timer_monitor.sv,Observes down-counter decrement and samples tick_o pulse,sample_tx;run_phase,"clk,timer_tick,bus_ready"
+TIMER_VIP,Agent,timer_agent,timer_agent.sv,Encapsulates sequencer driver and monitor for Timer VIP,build_phase;connect_phase,N/A
+TIMER_VIP,Scoreboard,timer_scoreboard,timer_scoreboard.sv,Verifies tick frequency matches programmed reload value,write;check_phase,"timer_tick,rdata"
+TIMER_VIP,Interface,timer_if,timer_if.sv,SystemVerilog interface connecting Timer to VIP,clocking_cb,"clk,rst_n,timer_tick"
+TIMER_VIP,Sequence,timer_periodic_seq,timer_seq.sv,Programs periodic down-counter and checks tick count,body,CTRL;RELOAD

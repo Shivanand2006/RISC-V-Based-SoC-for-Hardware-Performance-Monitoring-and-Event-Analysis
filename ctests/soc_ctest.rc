@@ -1,0 +1,43 @@
+Magic 271485
+Revision Verdi_U-2023.03-SP1
+
+viewPort 0 25 1600 900 196 92
+openDirFile -d / "" "soc_c_test.fsdb"
+signalSpacing 5
+zoom 0.000000 240000.000000
+cursor 0.000000
+marker 0.000000
+top 0
+markerPos 5
+
+; Clock, reset, firmware progress
+addGroup "Clock_Reset_CTest"
+activeDirFile "" "soc_c_test.fsdb"
+addSignal -h 15 /tb_soc_ctest/clk
+addSignal -h 15 /tb_soc_ctest/rst_n
+addSignal -h 15 /tb_soc_ctest/uart_tx
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_ctest/gpio_out[7:0]
+
+; Core Event & Instruction Retirement Signals
+addGroup "Core_Retire_and_Events"
+addSignal -h 15 /tb_soc_ctest/u_soc_top/core_instr_retire
+addSignal -h 15 /tb_soc_ctest/u_soc_top/core_evt_load
+addSignal -h 15 /tb_soc_ctest/u_soc_top/core_evt_store
+addSignal -h 15 /tb_soc_ctest/u_soc_top/core_evt_branch_jump
+addSignal -h 15 /tb_soc_ctest/u_soc_top/core_evt_stall_bubble
+
+; Hardware Performance Monitors
+addGroup "HPM_Counters"
+addSignal -h 15 /tb_soc_ctest/u_soc_top/u_cycle_cnt/en_q
+addSignal -h 15 -UNSIGNED -UDEC /tb_soc_ctest/u_soc_top/u_cycle_cnt/count_q[63:0]
+addSignal -h 15 /tb_soc_ctest/u_soc_top/u_instr_cnt/en_q
+addSignal -h 15 -UNSIGNED -UDEC /tb_soc_ctest/u_soc_top/u_instr_cnt/count_q[63:0]
+addSignal -h 15 -UNSIGNED -UDEC /tb_soc_ctest/u_soc_top/u_event_cnt/evt_sel_q[2:0]
+addSignal -h 15 -UNSIGNED -UDEC /tb_soc_ctest/u_soc_top/u_event_cnt/count_q[31:0]
+addSignal -h 15 /tb_soc_ctest/u_soc_top/u_event_cnt/thresh_hit_q
+addSignal -h 15 /tb_soc_ctest/u_soc_top/u_event_cnt/irq_o
+
+; Peripherals
+addGroup "Peripherals"
+addSignal -h 15 /tb_soc_ctest/u_soc_top/uart_tx_done
+addSignal -h 15 /tb_soc_ctest/u_soc_top/timer_tick

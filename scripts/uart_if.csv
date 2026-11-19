@@ -1,0 +1,9 @@
+VIP_Name,Component,Class_Name,File_Name,Description,Key_Methods,Signals_Used
+UART_VIP,Sequence_Item,uart_seq_item,uart_item.sv,Encapsulates UART baud configure and serial TX/RX bytes,convert2string;do_copy;do_compare,"addr,data,we,tx_data,rx_data"
+UART_VIP,Driver,uart_driver,uart_driver.sv,Drives bus registers and injects serial frames on uart_rx pin,drive_tx;run_phase,"clk,rst_n,bus_req,uart_rx"
+UART_VIP,Monitor,uart_monitor,uart_monitor.sv,Monitors bus access and decodes serial 8N1 bitstream from uart_tx,sample_uart;run_phase,"clk,uart_tx,uart_rx,bus_ready"
+UART_VIP,Agent,uart_agent,uart_agent.sv,Encapsulates sequencer driver and monitor for UART VIP,build_phase;connect_phase,N/A
+UART_VIP,Scoreboard,uart_scoreboard,uart_scoreboard.sv,Validates baud rate divisor and TX/RX data integrity,write;check_phase,"uart_tx,uart_rx,rdata"
+UART_VIP,Interface,uart_if,uart_if.sv,SystemVerilog interface connecting UART peripheral to VIP,clocking_cb,"clk,rst_n,uart_tx,uart_rx,uart_irq"
+UART_VIP,Sequence,uart_tx_string_seq,uart_seq.sv,Transmits ASCII string and verifies serial frame completion,body,RBR_THR;LSR
+UART_VIP,Sequence,uart_loopback_seq,uart_seq.sv,Sends characters through internal/external loopback,body,RBR_THR;IER

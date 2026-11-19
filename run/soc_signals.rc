@@ -1,0 +1,48 @@
+Magic 271485
+addGroup "01_Testbench_Status"
+activeDirFile "" "/home/student/1602-23-735-108/tb_soc_top.fsdb"
+addSignal -h 15 /tb_soc_top/clk
+addSignal -h 15 -holdScope rst_n
+addSignal -h 15 -holdScope cycle_idx[31:0]
+addSignal -h 15 -holdScope pass_seen
+addSignal -h 15 -holdScope fail_seen
+addSignal -h 15 -holdScope gpio_out[7:0]
+addGroup "02_CPU_Core_Execution"
+addSignal -h 15 /tb_soc_top/u_soc_top/core_instr_retire
+addSignal -h 15 -HEX /tb_soc_top/u_soc_top/u_veer_core_adapter/trace_rv_i_address_ip[31:0]
+addSignal -h 15 -HEX /tb_soc_top/u_soc_top/u_veer_core_adapter/trace_rv_i_insn_ip[31:0]
+addSignal -h 15 /tb_soc_top/u_soc_top/u_veer_core_adapter/trace_rv_i_valid_ip
+addGroup "03_Cycle_Counter_IP"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_top/u_soc_top/u_cycle_cnt/count_q[63:0]
+addSignal -h 15 /tb_soc_top/u_soc_top/u_cycle_cnt/en_q
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_top/u_soc_top/u_cycle_cnt/shadow_hi_q[31:0]
+addGroup "04_Instruction_Counter_IP"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_top/u_soc_top/u_instr_cnt/count_q[63:0]
+addSignal -h 15 /tb_soc_top/u_soc_top/u_instr_cnt/en_q
+addSignal -h 15 /tb_soc_top/u_soc_top/u_instr_cnt/instr_retire_i[0:0]
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_top/u_soc_top/u_instr_cnt/shadow_hi_q[31:0]
+addGroup "05_Performance_Event_Counter_IP"
+addSignal -h 15 -UNSIGNED -HEX /tb_soc_top/u_soc_top/u_event_cnt/count_q[31:0]
+addSignal -h 15 -UNSIGNED /tb_soc_top/u_soc_top/u_event_cnt/evt_sel_q[2:0]
+addSignal -h 15 /tb_soc_top/u_soc_top/u_event_cnt/en_q
+addSignal -h 15 /tb_soc_top/u_soc_top/u_event_cnt/thresh_hit_q
+addSignal -h 15 /tb_soc_top/u_soc_top/events[7:0]
+addGroup "06_SoC_Data_Bus"
+addSignal -h 15 /tb_soc_top/u_soc_top/core_dmem_req
+addSignal -h 15 /tb_soc_top/u_soc_top/core_dmem_we
+addSignal -h 15 -HEX /tb_soc_top/u_soc_top/core_dmem_addr[31:0]
+addSignal -h 15 -HEX /tb_soc_top/u_soc_top/core_dmem_wdata[31:0]
+addSignal -h 15 -HEX /tb_soc_top/u_soc_top/core_dmem_rdata[31:0]
+addSignal -h 15 /tb_soc_top/u_soc_top/core_dmem_ready
+addGroup "07_Peripherals_and_UART"
+addSignal -h 15 /tb_soc_top/uart_tx
+addSignal -h 15 /tb_soc_top/uart_rx
+addSignal -h 15 /tb_soc_top/u_soc_top/timer_tick
+addSignal -h 15 /tb_soc_top/u_soc_top/uart_tx_done
+addGroup "08_TB_Shadow_Counters"
+addSignal -h 15 -UNSIGNED /tb_soc_top/tb_cycle_count[63:0]
+addSignal -h 15 -UNSIGNED /tb_soc_top/tb_instr_count[63:0]
+addSignal -h 15 -UNSIGNED /tb_soc_top/tb_store_count[31:0]
+addSignal -h 15 -UNSIGNED /tb_soc_top/tb_load_count[31:0]
+addSignal -h 15 -UNSIGNED /tb_soc_top/tb_branch_jump_count[31:0]
+addSignal -h 15 -UNSIGNED /tb_soc_top/tb_fetch_count[31:0]
